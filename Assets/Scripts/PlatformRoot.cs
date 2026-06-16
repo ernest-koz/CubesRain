@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Создаёт основную платформу и набор наклонных платформ над ней.
-/// Каждая платформа получает компонент Platform для детекции столкновений.
-/// </summary>
 public class PlatformRoot : MonoBehaviour
 {
     [Header("Main Platform")]

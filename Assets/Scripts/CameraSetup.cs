@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Отвечает за начальную настройку позиции и поворота камеры.
-/// Вынесен в отдельный компонент, чтобы не смешивать логику создания платформ и настройки камеры.
-/// </summary>
 public class CameraSetup : MonoBehaviour
 {
     [SerializeField] private bool _autoSetupOnAwake = true;

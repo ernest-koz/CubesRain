@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Объектный пул для кубов.
-/// Префаб Cube должен быть назначен в инспекторе.
-/// </summary>
 public class Pool : MonoBehaviour
 {
     [SerializeField] private Cube _prefab;
@@ -103,7 +99,6 @@ public class Pool : MonoBehaviour
         }
         catch (MissingReferenceException)
         {
-            // Объект был уничтожен извне — ничего не делаем
         }
 
         if (cube != null && cube.gameObject != null)

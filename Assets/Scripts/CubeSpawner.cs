@@ -1,10 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// Спавнит кубы в случайных позициях над платформой.
-/// Ссылка на Pool задаётся в инспекторе.
-/// </summary>
 public class CubeSpawner : MonoBehaviour
 {
     [Header("Spawn Area")]
@@ -24,15 +20,7 @@ public class CubeSpawner : MonoBehaviour
 
     private int _totalSpawned;
     private Coroutine _spawnCoroutine;
-
-    private void OnDisable()
-    {
-        if (_spawnCoroutine != null)
-        {
-            StopCoroutine(_spawnCoroutine);
-            _spawnCoroutine = null;
-        }
-    }
+    private WaitForSeconds _spawnCachedWait;
 
     private void Start()
     {
@@ -46,7 +34,17 @@ public class CubeSpawner : MonoBehaviour
         _spawnInterval = Mathf.Max(0.1f, _spawnInterval);
         _maxTotalSpawned = Mathf.Max(1, _maxTotalSpawned);
 
+        _spawnCachedWait = new WaitForSeconds(_spawnInterval);
         _spawnCoroutine = StartCoroutine(SpawnRoutine());
+    }
+
+    private void OnDisable()
+    {
+        if (_spawnCoroutine != null)
+        {
+            StopCoroutine(_spawnCoroutine);
+            _spawnCoroutine = null;
+        }
     }
 
     private IEnumerator SpawnRoutine()
@@ -65,12 +63,11 @@ public class CubeSpawner : MonoBehaviour
 
                 Cube cube = _pool.Get(position, Random.rotation);
 
-                // Pool.Get() может вернуть null, если пул исчерпан
                 if (cube != null)
                     _totalSpawned++;
             }
 
-            yield return new WaitForSeconds(_spawnInterval);
+            yield return _spawnCachedWait;
         }
     }
 }
