@@ -1,73 +1,31 @@
-using System.Collections;
 using UnityEngine;
 
-public class CubeSpawner : MonoBehaviour
+public class CubeSpawner : Spawner<Cube>
 {
-    [Header("Spawn Area")]
-    [SerializeField] private float _spawnRangeX = 8f;
-    [SerializeField] private float _spawnRangeZ = 8f;
-    [SerializeField] private float _spawnHeight = 15f;
-
-    [Header("Spawn Rate")]
-    [SerializeField] private float _spawnInterval = 0.5f;
-    [SerializeField] private int _cubesPerBatch = 3;
-
-    [Header("Limits")]
-    [SerializeField] private int _maxTotalSpawned = 1000;
-
     [Header("References")]
-    [SerializeField] private Pool _pool;
+    [SerializeField] private BombSpawner _bombSpawner;
 
-    private int _totalSpawned;
-    private Coroutine _spawnCoroutine;
-    private WaitForSeconds _spawnCachedWait;
-
-    private void Start()
+    protected override void Start()
     {
-        if (_pool == null)
-        {
-            Debug.LogError($"Pool not assigned in inspector. Assign Pool reference.", gameObject);
+        base.Start();
+
+        if (_pool != null && _bombSpawner != null)
+            _pool.Returned += OnCubeReturned;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+
+        if (_pool != null)
+            _pool.Returned -= OnCubeReturned;
+    }
+
+    private void OnCubeReturned(Cube cube)
+    {
+        if (cube == null || _bombSpawner == null)
             return;
-        }
 
-        _cubesPerBatch = Mathf.Max(1, _cubesPerBatch);
-        _spawnInterval = Mathf.Max(0.1f, _spawnInterval);
-        _maxTotalSpawned = Mathf.Max(1, _maxTotalSpawned);
-
-        _spawnCachedWait = new WaitForSeconds(_spawnInterval);
-        _spawnCoroutine = StartCoroutine(SpawnRoutine());
-    }
-
-    private void OnDisable()
-    {
-        if (_spawnCoroutine != null)
-        {
-            StopCoroutine(_spawnCoroutine);
-            _spawnCoroutine = null;
-        }
-    }
-
-    private IEnumerator SpawnRoutine()
-    {
-        while (_totalSpawned < _maxTotalSpawned)
-        {
-            int remaining = _maxTotalSpawned - _totalSpawned;
-            int batchSize = Mathf.Min(_cubesPerBatch, remaining);
-
-            for (int i = 0; i < batchSize; i++)
-            {
-                Vector3 position = new Vector3(
-                    Random.Range(-_spawnRangeX, _spawnRangeX),
-                    _spawnHeight,
-                    Random.Range(-_spawnRangeZ, _spawnRangeZ));
-
-                Cube cube = _pool.Get(position, Random.rotation);
-
-                if (cube != null)
-                    _totalSpawned++;
-            }
-
-            yield return _spawnCachedWait;
-        }
+        _bombSpawner.SpawnBomb(cube.transform.position);
     }
 }

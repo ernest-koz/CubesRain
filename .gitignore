@@ -105,3 +105,21 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# ==============================
+# AI tooling (local only)
+# ==============================
+/.claude/
+/.codex/
+/.agents/
+/.zcode/
+/.tmp/
+/.mcp.json
+/.oac.json
+
+# Project docs kept out of the repository
+/docs/
+
+# Local tests kept out of the repository
+/Assets/Tests/
+/Assets/Tests.meta

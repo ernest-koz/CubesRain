@@ -155,9 +155,10 @@ MonoBehaviour:
   _spawnRangeZ: 8
   _spawnHeight: 15
   _spawnInterval: 0.5
-  _cubesPerBatch: 3
+  _objectsPerBatch: 3
   _maxTotalSpawned: 1000
   _pool: {fileID: 1083546530}
+  _bombSpawner: {fileID: 202000002}
 --- !u!4 &449377588
 Transform:
   m_ObjectHideFlags: 0
@@ -484,7 +485,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1083546529}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c38c9c0d0fdf11408dc9930311a2336, type: 3}
+  m_Script: {fileID: 11500000, guid: aae42bf08cdac5456dec33b007e7f0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 7593590956176578758, guid: 204932fe6fa48464fbb3bb307f45777c, type: 3}
@@ -505,6 +506,150 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &201000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 201000003}
+  - component: {fileID: 201000002}
+  m_Layer: 0
+  m_Name: BombPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &201000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61c19d43f6ea08f36afe8f4b8703e603, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _prefab: {fileID: 880000007, guid: bb0dd45df5d10bf6f2890345c1390b0d, type: 3}
+  _initialSize: 20
+  _maxSize: 1000
+--- !u!4 &201000003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 201000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &202000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 202000003}
+  - component: {fileID: 202000002}
+  m_Layer: 0
+  m_Name: BombSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &202000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b1bca4050a9d050bb4476d6c5e6c25a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _spawnRangeX: 8
+  _spawnRangeZ: 8
+  _spawnHeight: 15
+  _spawnInterval: 0.5
+  _objectsPerBatch: 1
+  _maxTotalSpawned: 1000
+  _pool: {fileID: 201000002}
+--- !u!4 &202000003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 202000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &203000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 203000003}
+  - component: {fileID: 203000002}
+  m_Layer: 0
+  m_Name: StatsDisplay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &203000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f419afbaf785338a05280d6e46c92365, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _cubeSpawner: {fileID: 449377587}
+  _bombSpawner: {fileID: 202000002}
+--- !u!4 &203000003
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 203000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -515,3 +660,6 @@ SceneRoots:
   - {fileID: 1083546531}
   - {fileID: 449377588}
   - {fileID: 766277688}
+  - {fileID: 201000003}
+  - {fileID: 202000003}
+  - {fileID: 203000003}

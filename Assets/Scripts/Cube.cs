@@ -1,9 +1,8 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Renderer))]
-public class Cube : MonoBehaviour
+public class Cube : PoolableObject
 {
     [Header("Appearance")]
     [SerializeField] private Color _color = new Color(0.7f, 0.7f, 0.7f, 1f);
@@ -12,13 +11,10 @@ public class Cube : MonoBehaviour
     [SerializeField] private float _minLifetime = 2f;
     [SerializeField] private float _maxLifetime = 5f;
 
-    public event Action<Cube> ReturnRequested;
-
     private Renderer _renderer;
     private Rigidbody _rigidbody;
     private MaterialPropertyBlock _propertyBlock;
     private bool _hasTouchedPlatform;
-    private Coroutine _returnCoroutine;
 
     private void Awake()
     {
@@ -46,7 +42,7 @@ public class Cube : MonoBehaviour
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
 
-        StartFallbackReturn();
+        StartCoroutine(FallbackReturnAfterDelay(_maxLifetime * 2f));
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -65,21 +61,9 @@ public class Cube : MonoBehaviour
         StartCoroutine(ReturnToPoolAfterDelay(lifetime));
     }
 
-    private void OnDestroy()
-    {
-        ReturnRequested = null;
-    }
-
-    public void ResetState()
+    public override void ResetState()
     {
         StopAllCoroutines();
-        _returnCoroutine = null;
-    }
-
-    private void StartFallbackReturn()
-    {
-        float fallbackDelay = _maxLifetime * 2f;
-        _returnCoroutine = StartCoroutine(FallbackReturnAfterDelay(fallbackDelay));
     }
 
     private IEnumerator FallbackReturnAfterDelay(float delay)
@@ -87,7 +71,14 @@ public class Cube : MonoBehaviour
         yield return new WaitForSeconds(delay);
 
         if (_hasTouchedPlatform == false)
-            ReturnRequested?.Invoke(this);
+            RaiseReturnRequested();
+    }
+
+    private IEnumerator ReturnToPoolAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        RaiseReturnRequested();
     }
 
     private void ApplyColor(Color color)
@@ -97,12 +88,5 @@ public class Cube : MonoBehaviour
 
         _propertyBlock.SetColor(ColorHelper.ColorProperty, color);
         _renderer.SetPropertyBlock(_propertyBlock);
-    }
-
-    private IEnumerator ReturnToPoolAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        ReturnRequested?.Invoke(this);
     }
 }
