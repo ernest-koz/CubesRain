@@ -538,7 +538,7 @@ MonoBehaviour:
   _objectsPerBatch: 3
   _maxTotalSpawned: 1000
   _pool: {fileID: 1083546530}
-  _bombSpawner: {fileID: 0}
+  _bombSpawner: {fileID: 202000002}
 --- !u!4 &449377588
 Transform:
   m_ObjectHideFlags: 0

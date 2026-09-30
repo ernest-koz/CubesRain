@@ -17,17 +17,58 @@ public class SpawnerStatsDisplay : MonoBehaviour
         _bombStats = CreateText(canvas, "Bomb Stats", new Vector2(20f, -64f));
     }
 
-    private void Update()
+    private void OnEnable()
+    {
+        _cubeSpawner.Spawned += RenderStats;
+        _cubeSpawner.SourcePool.Returned += OnCubeReturned;
+        _bombSpawner.Spawned += RenderStats;
+        _bombSpawner.SourcePool.Returned += OnBombReturned;
+    }
+
+    private void Start()
+    {
+        RenderStats();
+    }
+
+    private void OnDisable()
+    {
+        _cubeSpawner.Spawned -= RenderStats;
+        _cubeSpawner.SourcePool.Returned -= OnCubeReturned;
+        _bombSpawner.Spawned -= RenderStats;
+        _bombSpawner.SourcePool.Returned -= OnBombReturned;
+    }
+
+    private void OnValidate()
+    {
+        if (_cubeSpawner == null)
+        {
+            Debug.LogError($"CubeSpawner is not assigned on {gameObject.name}.", gameObject);
+        }
+
+        if (_bombSpawner == null)
+        {
+            Debug.LogError($"BombSpawner is not assigned on {gameObject.name}.", gameObject);
+        }
+    }
+
+    private void RenderStats()
     {
         _cubeStats.text = Format("Кубы", _cubeSpawner);
         _bombStats.text = Format("Бомбы", _bombSpawner);
     }
 
+    private void OnCubeReturned(Cube cube)
+    {
+        RenderStats();
+    }
+
+    private void OnBombReturned(Bomb bomb)
+    {
+        RenderStats();
+    }
+
     private string Format<T>(string label, Spawner<T> spawner) where T : PoolableObject
     {
-        if (spawner == null || spawner.SourcePool == null)
-            return $"{label}: нет данных";
-
         Pool<T> pool = spawner.SourcePool;
 
         return $"{label} — заспавнено: {spawner.TotalSpawned} | создано: {pool.CreatedCount} | активно: {pool.ActiveCount}";

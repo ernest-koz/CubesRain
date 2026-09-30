@@ -5,56 +5,60 @@ using UnityEngine;
 public class Pool<T> : MonoBehaviour where T : PoolableObject
 {
     [SerializeField] private T _prefab;
-    [SerializeField] private int _initialSize = 20;
-    [SerializeField] private int _maxSize = 1000;
+    [SerializeField, Min(0)] private int _initialSize = 20;
+    [SerializeField, Min(1)] private int _maxSize = 1000;
 
-    private Queue<T> _available = new Queue<T>();
-    private HashSet<T> _active = new HashSet<T>();
-    private bool _initialized;
+    private readonly Queue<T> _available = new Queue<T>();
+    private readonly HashSet<T> _active = new HashSet<T>();
 
     public event Action<T> Returned;
 
     public int CreatedCount { get; private set; }
+
     public int ActiveCount => _active.Count;
 
     private void Awake()
     {
-        if (_initialized)
-            return;
-
-        if (_prefab == null)
+        for (int i = 0; i < _initialSize; i++)
         {
-            Debug.LogError($"Prefab not assigned. Assign a prefab in the inspector.", gameObject);
-            return;
+            Grow();
         }
-
-        int size = Mathf.Min(_initialSize, _maxSize);
-        for (int i = 0; i < size; i++)
-            CreateNewObject();
-
-        _initialized = true;
     }
 
     private void OnDestroy()
     {
         foreach (T poolable in _active)
+        {
             CleanupObject(poolable);
+        }
 
         foreach (T poolable in _available)
+        {
             CleanupObject(poolable);
+        }
 
         _active.Clear();
         _available.Clear();
     }
 
+    private void OnValidate()
+    {
+        if (_prefab == null)
+        {
+            Debug.LogError($"Prefab is not assigned on {gameObject.name}.", gameObject);
+        }
+    }
+
     public T Get(Vector3 position, Quaternion rotation)
     {
-        if (_available.Count == 0 && _active.Count < _maxSize)
-            CreateNewObject();
+        if (_available.Count == 0)
+        {
+            Grow();
+        }
 
         if (_available.Count == 0)
         {
-            Debug.LogWarning($"Pool exhausted. Max size ({_maxSize}) reached.", gameObject);
+            Debug.LogWarning($"Pool exhausted. Maximum size ({_maxSize}) reached.", gameObject);
             return null;
         }
 
@@ -70,7 +74,9 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
     public void Return(T poolable)
     {
         if (_active.Remove(poolable) == false)
+        {
             return;
+        }
 
         poolable.ResetState();
         poolable.gameObject.SetActive(false);
@@ -80,8 +86,13 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
         Returned?.Invoke(poolable);
     }
 
-    private void CreateNewObject()
+    private void Grow()
     {
+        if (_active.Count + _available.Count >= _maxSize)
+        {
+            return;
+        }
+
         T poolable = Instantiate(_prefab, transform);
         poolable.ReturnRequested += OnReturnRequested;
         poolable.gameObject.SetActive(false);
@@ -97,20 +108,17 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
     private void CleanupObject(T poolable)
     {
         if (poolable == null)
+        {
             return;
+        }
+
+        poolable.ReturnRequested -= OnReturnRequested;
 
         if (Application.isPlaying == false)
+        {
             return;
-
-        try
-        {
-            poolable.ReturnRequested -= OnReturnRequested;
-        }
-        catch (MissingReferenceException)
-        {
         }
 
-        if (poolable != null && poolable.gameObject != null)
-            Destroy(poolable.gameObject);
+        Destroy(poolable.gameObject);
     }
 }

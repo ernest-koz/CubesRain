@@ -1,47 +1,43 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
 {
     [Header("Spawn Area")]
-    [SerializeField] protected float _spawnRangeX = 8f;
-    [SerializeField] protected float _spawnRangeZ = 8f;
-    [SerializeField] protected float _spawnHeight = 15f;
+    [SerializeField] private float _spawnRangeX = 8f;
+    [SerializeField] private float _spawnRangeZ = 8f;
+    [SerializeField] private float _spawnHeight = 15f;
 
     [Header("Spawn Rate")]
-    [SerializeField] protected float _spawnInterval = 0.5f;
-    [SerializeField] protected int _objectsPerBatch = 3;
+    [SerializeField, Min(0.1f)] private float _spawnInterval = 0.5f;
+    [SerializeField, Min(1)] private int _objectsPerBatch = 3;
 
     [Header("Limits")]
-    [SerializeField] protected int _maxTotalSpawned = 1000;
+    [SerializeField, Min(1)] private int _maxTotalSpawned = 1000;
 
     [Header("References")]
-    [SerializeField] protected Pool<T> _pool;
+    [SerializeField] private Pool<T> _pool;
 
     private Coroutine _spawnCoroutine;
-    private WaitForSeconds _spawnCachedWait;
+    private WaitForSeconds _spawnWait;
+
+    public event Action Spawned;
 
     public int TotalSpawned { get; private set; }
+
     public Pool<T> SourcePool => _pool;
 
     protected virtual bool SpawnContinuously => true;
 
-    protected virtual void Start()
+    private void Start()
     {
-        if (_pool == null)
-        {
-            Debug.LogError($"Pool not assigned in inspector. Assign Pool reference.", gameObject);
-            return;
-        }
-
-        _objectsPerBatch = Mathf.Max(1, _objectsPerBatch);
-        _spawnInterval = Mathf.Max(0.1f, _spawnInterval);
-        _maxTotalSpawned = Mathf.Max(1, _maxTotalSpawned);
-
-        _spawnCachedWait = new WaitForSeconds(_spawnInterval);
+        _spawnWait = new WaitForSeconds(_spawnInterval);
 
         if (SpawnContinuously)
+        {
             _spawnCoroutine = StartCoroutine(SpawnRoutine());
+        }
     }
 
     protected virtual void OnDisable()
@@ -53,25 +49,38 @@ public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
         }
     }
 
-    protected virtual T SpawnAt(Vector3 position, Quaternion rotation)
+    private void OnValidate()
     {
-        if (_pool == null || TotalSpawned >= _maxTotalSpawned)
-            return null;
+        if (_pool == null)
+        {
+            Debug.LogError($"Pool is not assigned on {gameObject.name}.", gameObject);
+        }
+    }
+
+    protected void SpawnAt(Vector3 position, Quaternion rotation)
+    {
+        if (TotalSpawned >= _maxTotalSpawned)
+        {
+            return;
+        }
 
         T spawned = _pool.Get(position, rotation);
 
-        if (spawned != null)
-            TotalSpawned++;
+        if (spawned == null)
+        {
+            return;
+        }
 
-        return spawned;
+        TotalSpawned++;
+        Spawned?.Invoke();
     }
 
-    protected Vector3 GetRandomSpawnPosition()
+    private Vector3 GetRandomSpawnPosition()
     {
         return new Vector3(
-            Random.Range(-_spawnRangeX, _spawnRangeX),
+            UnityEngine.Random.Range(-_spawnRangeX, _spawnRangeX),
             _spawnHeight,
-            Random.Range(-_spawnRangeZ, _spawnRangeZ));
+            UnityEngine.Random.Range(-_spawnRangeZ, _spawnRangeZ));
     }
 
     private IEnumerator SpawnRoutine()
@@ -82,9 +91,11 @@ public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
             int batchSize = Mathf.Min(_objectsPerBatch, remaining);
 
             for (int i = 0; i < batchSize; i++)
-                SpawnAt(GetRandomSpawnPosition(), Random.rotation);
+            {
+                SpawnAt(GetRandomSpawnPosition(), UnityEngine.Random.rotation);
+            }
 
-            yield return _spawnCachedWait;
+            yield return _spawnWait;
         }
     }
 }

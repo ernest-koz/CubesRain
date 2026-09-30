@@ -9,11 +9,17 @@ public class CameraSetup : MonoBehaviour
     private void Awake()
     {
         if (_autoSetupOnAwake == false)
+        {
             return;
+        }
 
         Camera camera = Camera.main;
+
         if (camera == null)
+        {
+            Debug.LogError($"Main Camera not found for {nameof(CameraSetup)} on {gameObject.name}.", gameObject);
             return;
+        }
 
         camera.transform.position = _position;
         camera.transform.eulerAngles = _eulerAngles;

@@ -4,6 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(Renderer))]
 public class Cube : PoolableObject
 {
+    private static readonly int ColorProperty = Shader.PropertyToID("_Color");
+
     [Header("Appearance")]
     [SerializeField] private Color _color = new Color(0.7f, 0.7f, 0.7f, 1f);
 
@@ -11,30 +13,22 @@ public class Cube : PoolableObject
     [SerializeField] private float _minLifetime = 2f;
     [SerializeField] private float _maxLifetime = 5f;
 
+    private MaterialPropertyBlock _propertyBlock;
     private Renderer _renderer;
     private Rigidbody _rigidbody;
-    private MaterialPropertyBlock _propertyBlock;
     private bool _hasTouchedPlatform;
+    private Coroutine _fallbackReturnCoroutine;
+    private Coroutine _returnToPoolCoroutine;
 
     private void Awake()
     {
-        if (TryGetComponent(out _renderer) == false)
-            Debug.LogError($"Renderer component missing on {name}.", gameObject);
-
-        if (TryGetComponent(out _rigidbody) == false)
-            Debug.LogError($"Rigidbody component missing on {name}.", gameObject);
-
+        _renderer = GetComponent<Renderer>();
+        _rigidbody = GetComponent<Rigidbody>();
         _propertyBlock = new MaterialPropertyBlock();
-
-        if (_minLifetime > _maxLifetime)
-            _maxLifetime = _minLifetime;
     }
 
     private void OnEnable()
     {
-        if (_renderer == null || _rigidbody == null)
-            return;
-
         _hasTouchedPlatform = false;
 
         ApplyColor(_color);
@@ -42,36 +36,67 @@ public class Cube : PoolableObject
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
 
-        StartCoroutine(FallbackReturnAfterDelay(_maxLifetime * 2f));
+        _fallbackReturnCoroutine = StartCoroutine(FallbackReturnAfterDelay(_maxLifetime * 2f));
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (_hasTouchedPlatform)
+        {
             return;
+        }
 
         if (collision.gameObject.TryGetComponent<Platform>(out _) == false)
+        {
             return;
+        }
 
         _hasTouchedPlatform = true;
 
-        ApplyColor(UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f));
+        if (_fallbackReturnCoroutine != null)
+        {
+            StopCoroutine(_fallbackReturnCoroutine);
+            _fallbackReturnCoroutine = null;
+        }
 
-        float lifetime = UnityEngine.Random.Range(_minLifetime, _maxLifetime);
-        StartCoroutine(ReturnToPoolAfterDelay(lifetime));
+        ApplyColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f));
+        _returnToPoolCoroutine = StartCoroutine(ReturnToPoolAfterDelay(Random.Range(_minLifetime, _maxLifetime)));
+    }
+
+    private void OnValidate()
+    {
+        if (_minLifetime > _maxLifetime)
+        {
+            _maxLifetime = _minLifetime;
+        }
     }
 
     public override void ResetState()
     {
-        StopAllCoroutines();
+        if (_fallbackReturnCoroutine != null)
+        {
+            StopCoroutine(_fallbackReturnCoroutine);
+            _fallbackReturnCoroutine = null;
+        }
+
+        if (_returnToPoolCoroutine != null)
+        {
+            StopCoroutine(_returnToPoolCoroutine);
+            _returnToPoolCoroutine = null;
+        }
+    }
+
+    private void ApplyColor(Color color)
+    {
+        _propertyBlock.SetColor(ColorProperty, color);
+        _renderer.SetPropertyBlock(_propertyBlock);
     }
 
     private IEnumerator FallbackReturnAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
 
-        if (_hasTouchedPlatform == false)
-            RaiseReturnRequested();
+        RaiseReturnRequested();
     }
 
     private IEnumerator ReturnToPoolAfterDelay(float delay)
@@ -79,14 +104,5 @@ public class Cube : PoolableObject
         yield return new WaitForSeconds(delay);
 
         RaiseReturnRequested();
-    }
-
-    private void ApplyColor(Color color)
-    {
-        if (_renderer == null || _propertyBlock == null)
-            return;
-
-        _propertyBlock.SetColor(ColorHelper.ColorProperty, color);
-        _renderer.SetPropertyBlock(_propertyBlock);
     }
 }

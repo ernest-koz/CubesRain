@@ -5,27 +5,27 @@ public class CubeSpawner : Spawner<Cube>
     [Header("References")]
     [SerializeField] private BombSpawner _bombSpawner;
 
-    protected override void Start()
+    private void OnEnable()
     {
-        base.Start();
-
-        if (_pool != null && _bombSpawner != null)
-            _pool.Returned += OnCubeReturned;
+        SourcePool.Returned += OnCubeReturned;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
+        SourcePool.Returned -= OnCubeReturned;
+    }
 
-        if (_pool != null)
-            _pool.Returned -= OnCubeReturned;
+    private void OnValidate()
+    {
+        if (_bombSpawner == null)
+        {
+            Debug.LogError($"BombSpawner is not assigned on {gameObject.name}.", gameObject);
+        }
     }
 
     private void OnCubeReturned(Cube cube)
     {
-        if (cube == null || _bombSpawner == null)
-            return;
-
         _bombSpawner.SpawnBomb(cube.transform.position);
     }
 }
