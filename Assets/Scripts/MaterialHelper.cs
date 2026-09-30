@@ -1,18 +1,18 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-internal static class MaterialHelper
+public static class MaterialHelper
 {
-    internal const int OpaqueMode = 0;
-    internal const int FadeMode = 2;
+    public const int OpaqueMode = 0;
+    public const int FadeMode = 2;
 
-    internal static void SetColor(Material material, Color color)
+    public static void SetColor(Material material, Color color)
     {
         if (material != null)
             material.color = color;
     }
 
-    internal static void SetRenderMode(Material material, int mode)
+    public static void SetRenderMode(Material material, int mode)
     {
         if (material == null)
             return;
