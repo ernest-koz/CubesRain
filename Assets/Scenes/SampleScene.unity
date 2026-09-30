@@ -796,7 +796,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _autoSetupOnAwake: 1
-  _position: {x: 0, y: 18, z: -12}
+  _position: {x: 0, y: 24, z: -20}
   _eulerAngles: {x: 50, y: 0, z: 0}
 --- !u!4 &766277688
 Transform:

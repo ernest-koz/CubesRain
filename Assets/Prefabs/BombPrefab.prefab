@@ -53,8 +53,17 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 880000001}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
+  serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &880000004
@@ -136,8 +145,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6dbe9636b8df53a3f4adc3cc7537b509, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _minDetonationDelay: 2
   _maxDetonationDelay: 5
 --- !u!114 &880000008
@@ -150,8 +159,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de046b9e0bc73a49fb478c26a622e7b9, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  _force: 10
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _force: 15
   _radius: 5
   _upwardsModifier: 0.3
+  _scatteringLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _explosionEffectPrefab: {fileID: 8030369201239111677, guid: 9e51f7a2c3d84b6195aa0e8f12d3b7c4, type: 3}
