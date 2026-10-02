@@ -5,8 +5,9 @@ public class CubeSpawner : Spawner<Cube>
     [Header("References")]
     [SerializeField] private BombSpawner _bombSpawner;
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
         SourcePool.Returned += OnCubeReturned;
     }
 
@@ -16,8 +17,10 @@ public class CubeSpawner : Spawner<Cube>
         SourcePool.Returned -= OnCubeReturned;
     }
 
-    private void OnValidate()
+    protected override void OnValidate()
     {
+        base.OnValidate();
+
         if (_bombSpawner == null)
         {
             Debug.LogError($"BombSpawner is not assigned on {gameObject.name}.", gameObject);

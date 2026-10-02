@@ -167,4 +167,4 @@ MonoBehaviour:
   _scatteringLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  _explosionEffectPrefab: {fileID: 8030369201239111677, guid: 9e51f7a2c3d84b6195aa0e8f12d3b7c4, type: 3}
+  _effectPrefab: {fileID: 8030369201239111677, guid: 9e51f7a2c3d84b6195aa0e8f12d3b7c4, type: 3}

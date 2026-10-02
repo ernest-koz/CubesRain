@@ -10,6 +10,7 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
 
     private readonly Queue<T> _available = new Queue<T>();
     private readonly HashSet<T> _active = new HashSet<T>();
+    private bool _hasReportedExhaustion;
 
     public event Action<T> Returned;
 
@@ -47,6 +48,11 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
         {
             Debug.LogError($"Prefab is not assigned on {gameObject.name}.", gameObject);
         }
+
+        if (_initialSize > _maxSize)
+        {
+            _initialSize = _maxSize;
+        }
     }
 
     public T Get(Vector3 position, Quaternion rotation)
@@ -58,9 +64,11 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
 
         if (_available.Count == 0)
         {
-            Debug.LogWarning($"Pool exhausted. Maximum size ({_maxSize}) reached.", gameObject);
+            ReportExhaustion();
             return null;
         }
+
+        _hasReportedExhaustion = false;
 
         T poolable = _available.Dequeue();
         Transform instanceTransform = poolable.transform;
@@ -98,6 +106,17 @@ public class Pool<T> : MonoBehaviour where T : PoolableObject
         poolable.gameObject.SetActive(false);
         _available.Enqueue(poolable);
         CreatedCount++;
+    }
+
+    private void ReportExhaustion()
+    {
+        if (_hasReportedExhaustion)
+        {
+            return;
+        }
+
+        _hasReportedExhaustion = true;
+        Debug.LogWarning($"Pool exhausted. Maximum size ({_maxSize}) reached.", gameObject);
     }
 
     private void OnReturnRequested(PoolableObject poolable)

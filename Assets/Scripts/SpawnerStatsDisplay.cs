@@ -3,38 +3,53 @@ using UnityEngine.UI;
 
 public class SpawnerStatsDisplay : MonoBehaviour
 {
+    private const int TextFontSize = 30;
+    private const int CanvasSortingOrder = 100;
+    private const string CanvasName = "StatsCanvas";
+    private const string CubeStatsName = "Cube Stats";
+    private const string BombStatsName = "Bomb Stats";
+    private const string LegacyFontResource = "LegacyRuntime.ttf";
+    private const string CubeLabel = "Кубы";
+    private const string BombLabel = "Бомбы";
+
+    private static readonly Vector2 TopLeftAnchor = new Vector2(0f, 1f);
+    private static readonly Vector2 TopLeftPivot = new Vector2(0f, 1f);
+    private static readonly Vector2 CubeTextOffset = new Vector2(20f, -20f);
+    private static readonly Vector2 BombTextOffset = new Vector2(20f, -64f);
+    private static readonly Vector2 TextSize = new Vector2(1100f, 40f);
+
     [Header("References")]
     [SerializeField] private CubeSpawner _cubeSpawner;
     [SerializeField] private BombSpawner _bombSpawner;
 
-    private Text _cubeStats;
-    private Text _bombStats;
+    private Text _cubeText;
+    private Text _bombText;
 
     private void Awake()
     {
         Canvas canvas = CreateCanvas();
-        _cubeStats = CreateText(canvas, "Cube Stats", new Vector2(20f, -20f));
-        _bombStats = CreateText(canvas, "Bomb Stats", new Vector2(20f, -64f));
+        _cubeText = CreateText(canvas, CubeStatsName, CubeTextOffset);
+        _bombText = CreateText(canvas, BombStatsName, BombTextOffset);
     }
 
     private void OnEnable()
     {
-        _cubeSpawner.Spawned += RenderStats;
+        _cubeSpawner.Spawned += Render;
         _cubeSpawner.SourcePool.Returned += OnCubeReturned;
-        _bombSpawner.Spawned += RenderStats;
+        _bombSpawner.Spawned += Render;
         _bombSpawner.SourcePool.Returned += OnBombReturned;
     }
 
     private void Start()
     {
-        RenderStats();
+        Render();
     }
 
     private void OnDisable()
     {
-        _cubeSpawner.Spawned -= RenderStats;
+        _cubeSpawner.Spawned -= Render;
         _cubeSpawner.SourcePool.Returned -= OnCubeReturned;
-        _bombSpawner.Spawned -= RenderStats;
+        _bombSpawner.Spawned -= Render;
         _bombSpawner.SourcePool.Returned -= OnBombReturned;
     }
 
@@ -51,20 +66,20 @@ public class SpawnerStatsDisplay : MonoBehaviour
         }
     }
 
-    private void RenderStats()
+    private void Render()
     {
-        _cubeStats.text = Format("Кубы", _cubeSpawner);
-        _bombStats.text = Format("Бомбы", _bombSpawner);
+        _cubeText.text = Format(CubeLabel, _cubeSpawner);
+        _bombText.text = Format(BombLabel, _bombSpawner);
     }
 
     private void OnCubeReturned(Cube cube)
     {
-        RenderStats();
+        Render();
     }
 
     private void OnBombReturned(Bomb bomb)
     {
-        RenderStats();
+        Render();
     }
 
     private string Format<T>(string label, Spawner<T> spawner) where T : PoolableObject
@@ -76,32 +91,32 @@ public class SpawnerStatsDisplay : MonoBehaviour
 
     private Canvas CreateCanvas()
     {
-        GameObject canvasObject = new GameObject("StatsCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        GameObject canvasObject = new GameObject(CanvasName, typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         Canvas canvas = canvasObject.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 100;
+        canvas.sortingOrder = CanvasSortingOrder;
         return canvas;
     }
 
-    private Text CreateText(Canvas canvas, string name, Vector2 anchoredPosition)
+    private Text CreateText(Canvas canvas, string objectName, Vector2 anchoredPosition)
     {
-        GameObject textObject = new GameObject(name, typeof(Text));
+        GameObject textObject = new GameObject(objectName, typeof(Text));
         textObject.transform.SetParent(canvas.transform, false);
 
         Text text = textObject.GetComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = 30;
+        text.font = Resources.GetBuiltinResource<Font>(LegacyFontResource);
+        text.fontSize = TextFontSize;
         text.color = Color.white;
         text.alignment = TextAnchor.UpperLeft;
         text.horizontalOverflow = HorizontalWrapMode.Overflow;
         text.verticalOverflow = VerticalWrapMode.Overflow;
 
-        RectTransform rect = text.rectTransform;
-        rect.anchorMin = new Vector2(0f, 1f);
-        rect.anchorMax = new Vector2(0f, 1f);
-        rect.pivot = new Vector2(0f, 1f);
-        rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(1100f, 40f);
+        RectTransform textRect = text.rectTransform;
+        textRect.anchorMin = TopLeftAnchor;
+        textRect.anchorMax = TopLeftAnchor;
+        textRect.pivot = TopLeftPivot;
+        textRect.anchoredPosition = anchoredPosition;
+        textRect.sizeDelta = TextSize;
 
         return text;
     }

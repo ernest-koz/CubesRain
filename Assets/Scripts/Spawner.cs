@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
 {
@@ -28,28 +29,35 @@ public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
 
     public Pool<T> SourcePool => _pool;
 
-    protected virtual bool SpawnContinuously => true;
+    protected virtual bool ShouldSpawnContinuously => true;
 
-    private void Start()
+    private void Awake()
     {
         _spawnWait = new WaitForSeconds(_spawnInterval);
+    }
 
-        if (SpawnContinuously)
+    protected virtual void OnEnable()
+    {
+        if (ShouldSpawnContinuously == false)
         {
-            _spawnCoroutine = StartCoroutine(SpawnRoutine());
+            return;
         }
+
+        _spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
     protected virtual void OnDisable()
     {
-        if (_spawnCoroutine != null)
+        if (_spawnCoroutine == null)
         {
-            StopCoroutine(_spawnCoroutine);
-            _spawnCoroutine = null;
+            return;
         }
+
+        StopCoroutine(_spawnCoroutine);
+        _spawnCoroutine = null;
     }
 
-    private void OnValidate()
+    protected virtual void OnValidate()
     {
         if (_pool == null)
         {
@@ -78,9 +86,9 @@ public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
     private Vector3 GetRandomSpawnPosition()
     {
         return new Vector3(
-            UnityEngine.Random.Range(-_spawnRangeX, _spawnRangeX),
+            Random.Range(-_spawnRangeX, _spawnRangeX),
             _spawnHeight,
-            UnityEngine.Random.Range(-_spawnRangeZ, _spawnRangeZ));
+            Random.Range(-_spawnRangeZ, _spawnRangeZ));
     }
 
     private IEnumerator SpawnRoutine()
@@ -92,7 +100,7 @@ public abstract class Spawner<T> : MonoBehaviour where T : PoolableObject
 
             for (int i = 0; i < batchSize; i++)
             {
-                SpawnAt(GetRandomSpawnPosition(), UnityEngine.Random.rotation);
+                SpawnAt(GetRandomSpawnPosition(), Random.rotation);
             }
 
             yield return _spawnWait;

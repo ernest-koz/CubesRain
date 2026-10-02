@@ -777,7 +777,7 @@ GameObject:
   - component: {fileID: 766277688}
   - component: {fileID: 766277687}
   m_Layer: 0
-  m_Name: 'CameraSetup '
+  m_Name: CameraSetup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -795,7 +795,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20f406b6b52d39b4a9bf2961fa79d360, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _autoSetupOnAwake: 1
+  _shouldPositionOnAwake: 1
   _position: {x: 0, y: 24, z: -20}
   _eulerAngles: {x: 50, y: 0, z: 0}
 --- !u!4 &766277688

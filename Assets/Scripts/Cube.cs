@@ -4,16 +4,19 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(Renderer))]
 public class Cube : PoolableObject
 {
+    private const float FallbackLifetimeMultiplier = 2f;
+
     private static readonly int ColorProperty = Shader.PropertyToID("_Color");
 
     [Header("Appearance")]
     [SerializeField] private Color _color = new Color(0.7f, 0.7f, 0.7f, 1f);
 
     [Header("Lifetime")]
-    [SerializeField] private float _minLifetime = 2f;
+    [SerializeField, Min(0f)] private float _minLifetime = 2f;
     [SerializeField] private float _maxLifetime = 5f;
 
     private MaterialPropertyBlock _propertyBlock;
+    private WaitForSeconds _fallbackReturnWait;
     private Renderer _renderer;
     private Rigidbody _rigidbody;
     private bool _hasTouchedPlatform;
@@ -25,6 +28,7 @@ public class Cube : PoolableObject
         _renderer = GetComponent<Renderer>();
         _rigidbody = GetComponent<Rigidbody>();
         _propertyBlock = new MaterialPropertyBlock();
+        _fallbackReturnWait = new WaitForSeconds(_maxLifetime * FallbackLifetimeMultiplier);
     }
 
     private void OnEnable()
@@ -36,7 +40,7 @@ public class Cube : PoolableObject
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
 
-        _fallbackReturnCoroutine = StartCoroutine(FallbackReturnAfterDelay(_maxLifetime * 2f));
+        _fallbackReturnCoroutine = StartCoroutine(ReturnAfterDelay(_fallbackReturnWait));
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -52,15 +56,12 @@ public class Cube : PoolableObject
         }
 
         _hasTouchedPlatform = true;
+        StopReturnRoutine(ref _fallbackReturnCoroutine);
 
-        if (_fallbackReturnCoroutine != null)
-        {
-            StopCoroutine(_fallbackReturnCoroutine);
-            _fallbackReturnCoroutine = null;
-        }
+        float lifetime = Random.Range(_minLifetime, _maxLifetime);
 
         ApplyColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f));
-        _returnToPoolCoroutine = StartCoroutine(ReturnToPoolAfterDelay(Random.Range(_minLifetime, _maxLifetime)));
+        _returnToPoolCoroutine = StartCoroutine(ReturnAfterDelay(new WaitForSeconds(lifetime)));
     }
 
     private void OnValidate()
@@ -73,17 +74,19 @@ public class Cube : PoolableObject
 
     public override void ResetState()
     {
-        if (_fallbackReturnCoroutine != null)
+        StopReturnRoutine(ref _fallbackReturnCoroutine);
+        StopReturnRoutine(ref _returnToPoolCoroutine);
+    }
+
+    private void StopReturnRoutine(ref Coroutine returnRoutine)
+    {
+        if (returnRoutine == null)
         {
-            StopCoroutine(_fallbackReturnCoroutine);
-            _fallbackReturnCoroutine = null;
+            return;
         }
 
-        if (_returnToPoolCoroutine != null)
-        {
-            StopCoroutine(_returnToPoolCoroutine);
-            _returnToPoolCoroutine = null;
-        }
+        StopCoroutine(returnRoutine);
+        returnRoutine = null;
     }
 
     private void ApplyColor(Color color)
@@ -92,16 +95,9 @@ public class Cube : PoolableObject
         _renderer.SetPropertyBlock(_propertyBlock);
     }
 
-    private IEnumerator FallbackReturnAfterDelay(float delay)
+    private IEnumerator ReturnAfterDelay(WaitForSeconds wait)
     {
-        yield return new WaitForSeconds(delay);
-
-        RaiseReturnRequested();
-    }
-
-    private IEnumerator ReturnToPoolAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
+        yield return wait;
 
         RaiseReturnRequested();
     }

@@ -7,7 +7,7 @@ public class Bomb : PoolableObject
     private static readonly Color AppearanceColor = new Color(0f, 0f, 0f, 1f);
 
     [Header("Detonation")]
-    [SerializeField] private float _minDetonationDelay = 2f;
+    [SerializeField, Min(0f)] private float _minDetonationDelay = 2f;
     [SerializeField] private float _maxDetonationDelay = 5f;
 
     private Material _material;
@@ -22,18 +22,12 @@ public class Bomb : PoolableObject
         _rigidbody = GetComponent<Rigidbody>();
         _explosion = GetComponent<Explosion>();
         _material = _renderer.material;
-
-        MaterialTransparency.SetOpaqueMode(_material);
-        MaterialTransparency.SetColor(_material, AppearanceColor);
     }
 
     private void OnEnable()
     {
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
-
-        MaterialTransparency.SetOpaqueMode(_material);
-        MaterialTransparency.SetColor(_material, AppearanceColor);
 
         float detonationDelay = Random.Range(_minDetonationDelay, _maxDetonationDelay);
         _detonationCoroutine = StartCoroutine(DetonateAfterDelay(detonationDelay));
@@ -61,11 +55,20 @@ public class Bomb : PoolableObject
 
     public override void ResetState()
     {
-        if (_detonationCoroutine != null)
+        StopDetonation();
+        MaterialTransparency.SetOpaqueMode(_material);
+        MaterialTransparency.SetColor(_material, AppearanceColor);
+    }
+
+    private void StopDetonation()
+    {
+        if (_detonationCoroutine == null)
         {
-            StopCoroutine(_detonationCoroutine);
-            _detonationCoroutine = null;
+            return;
         }
+
+        StopCoroutine(_detonationCoroutine);
+        _detonationCoroutine = null;
     }
 
     private static Color GetAppearanceColor(float alpha)
