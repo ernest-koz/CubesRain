@@ -4,7 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(Renderer), typeof(Explosion))]
 public class Bomb : PoolableObject
 {
-    private static readonly Color AppearanceColor = new Color(0f, 0f, 0f, 1f);
+    [Header("Appearance")]
+    [SerializeField] private Color _appearanceColor = new Color(0f, 0f, 0f, 1f);
 
     [Header("Detonation")]
     [SerializeField, Min(0f)] private float _minDetonationDelay = 2f;
@@ -57,7 +58,7 @@ public class Bomb : PoolableObject
     {
         StopDetonation();
         MaterialTransparency.SetOpaqueMode(_material);
-        MaterialTransparency.SetColor(_material, AppearanceColor);
+        MaterialTransparency.SetColor(_material, _appearanceColor);
     }
 
     private void StopDetonation()
@@ -71,9 +72,9 @@ public class Bomb : PoolableObject
         _detonationCoroutine = null;
     }
 
-    private static Color GetAppearanceColor(float alpha)
+    private Color GetAppearanceColor(float alpha)
     {
-        Color color = AppearanceColor;
+        Color color = _appearanceColor;
         color.a = Mathf.Clamp01(alpha);
         return color;
     }

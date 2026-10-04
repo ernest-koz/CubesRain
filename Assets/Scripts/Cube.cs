@@ -1,12 +1,10 @@
-using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(Renderer))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlatformDetector), typeof(CubeAppearance), typeof(LifetimeTimer))]
 public class Cube : PoolableObject
 {
     private const float FallbackLifetimeMultiplier = 2f;
-
-    private static readonly int ColorProperty = Shader.PropertyToID("_Color");
 
     [Header("Appearance")]
     [SerializeField] private Color _color = new Color(0.7f, 0.7f, 0.7f, 1f);
@@ -15,53 +13,39 @@ public class Cube : PoolableObject
     [SerializeField, Min(0f)] private float _minLifetime = 2f;
     [SerializeField] private float _maxLifetime = 5f;
 
-    private MaterialPropertyBlock _propertyBlock;
-    private WaitForSeconds _fallbackReturnWait;
-    private Renderer _renderer;
     private Rigidbody _rigidbody;
-    private bool _hasTouchedPlatform;
-    private Coroutine _fallbackReturnCoroutine;
-    private Coroutine _returnToPoolCoroutine;
+    private PlatformDetector _detector;
+    private CubeAppearance _appearance;
+    private LifetimeTimer _lifetime;
 
     private void Awake()
     {
-        _renderer = GetComponent<Renderer>();
         _rigidbody = GetComponent<Rigidbody>();
-        _propertyBlock = new MaterialPropertyBlock();
-        _fallbackReturnWait = new WaitForSeconds(_maxLifetime * FallbackLifetimeMultiplier);
+        _detector = GetComponent<PlatformDetector>();
+        _appearance = GetComponent<CubeAppearance>();
+        _lifetime = GetComponent<LifetimeTimer>();
     }
 
     private void OnEnable()
     {
-        _hasTouchedPlatform = false;
-
-        ApplyColor(_color);
-
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.angularVelocity = Vector3.zero;
 
-        _fallbackReturnCoroutine = StartCoroutine(ReturnAfterDelay(_fallbackReturnWait));
+        _detector.ResetState();
+        _appearance.Apply(_color);
+
+        _detector.PlatformTouched += OnPlatformTouched;
+        _lifetime.Elapsed += OnLifetimeElapsed;
+
+        _lifetime.Run(_maxLifetime * FallbackLifetimeMultiplier);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnDisable()
     {
-        if (_hasTouchedPlatform)
-        {
-            return;
-        }
+        _detector.PlatformTouched -= OnPlatformTouched;
+        _lifetime.Elapsed -= OnLifetimeElapsed;
 
-        if (collision.gameObject.TryGetComponent<Platform>(out _) == false)
-        {
-            return;
-        }
-
-        _hasTouchedPlatform = true;
-        StopReturnRoutine(ref _fallbackReturnCoroutine);
-
-        float lifetime = Random.Range(_minLifetime, _maxLifetime);
-
-        ApplyColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f));
-        _returnToPoolCoroutine = StartCoroutine(ReturnAfterDelay(new WaitForSeconds(lifetime)));
+        _lifetime.Stop();
     }
 
     private void OnValidate()
@@ -72,33 +56,14 @@ public class Cube : PoolableObject
         }
     }
 
-    public override void ResetState()
+    private void OnPlatformTouched()
     {
-        StopReturnRoutine(ref _fallbackReturnCoroutine);
-        StopReturnRoutine(ref _returnToPoolCoroutine);
+        _appearance.Apply(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f));
+        _lifetime.Run(Random.Range(_minLifetime, _maxLifetime));
     }
 
-    private void StopReturnRoutine(ref Coroutine returnRoutine)
+    private void OnLifetimeElapsed()
     {
-        if (returnRoutine == null)
-        {
-            return;
-        }
-
-        StopCoroutine(returnRoutine);
-        returnRoutine = null;
-    }
-
-    private void ApplyColor(Color color)
-    {
-        _propertyBlock.SetColor(ColorProperty, color);
-        _renderer.SetPropertyBlock(_propertyBlock);
-    }
-
-    private IEnumerator ReturnAfterDelay(WaitForSeconds wait)
-    {
-        yield return wait;
-
         RaiseReturnRequested();
     }
 }

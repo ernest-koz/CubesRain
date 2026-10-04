@@ -11,10 +11,10 @@ public static class MaterialTransparency
     private const string AlphaBlendKeyword = "_ALPHABLEND_ON";
     private const int ShaderDefaultQueue = -1;
 
-    private static readonly int ModeProperty = Shader.PropertyToID("_Mode");
-    private static readonly int SrcBlendProperty = Shader.PropertyToID("_SrcBlend");
-    private static readonly int DstBlendProperty = Shader.PropertyToID("_DstBlend");
-    private static readonly int ZWriteProperty = Shader.PropertyToID("_ZWrite");
+    private static readonly int s_modeProperty = Shader.PropertyToID("_Mode");
+    private static readonly int s_srcBlendProperty = Shader.PropertyToID("_SrcBlend");
+    private static readonly int s_dstBlendProperty = Shader.PropertyToID("_DstBlend");
+    private static readonly int s_zwriteProperty = Shader.PropertyToID("_ZWrite");
 
     public static void SetFadeMode(Material material)
     {
@@ -40,10 +40,10 @@ public static class MaterialTransparency
     {
         bool isFade = mode == FadeMode;
 
-        material.SetFloat(ModeProperty, mode);
-        material.SetFloat(SrcBlendProperty, (float)sourceBlend);
-        material.SetFloat(DstBlendProperty, (float)destinationBlend);
-        material.SetFloat(ZWriteProperty, isFade ? 0f : 1f);
+        material.SetFloat(s_modeProperty, mode);
+        material.SetFloat(s_srcBlendProperty, (float)sourceBlend);
+        material.SetFloat(s_dstBlendProperty, (float)destinationBlend);
+        material.SetFloat(s_zwriteProperty, isFade ? 0f : 1f);
         material.DisableKeyword(AlphaTestKeyword);
         material.DisableKeyword(AlphaPremultiplyKeyword);
 
