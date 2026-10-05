@@ -6,9 +6,6 @@ public class Cube : PoolableObject
 {
     private const float FallbackLifetimeMultiplier = 2f;
 
-    [Header("Appearance")]
-    [SerializeField] private Color _color = new Color(0.7f, 0.7f, 0.7f, 1f);
-
     [Header("Lifetime")]
     [SerializeField, Min(0f)] private float _minLifetime = 2f;
     [SerializeField] private float _maxLifetime = 5f;
@@ -32,7 +29,6 @@ public class Cube : PoolableObject
         _rigidbody.angularVelocity = Vector3.zero;
 
         _detector.ResetState();
-        _appearance.Apply(_color);
 
         _detector.PlatformTouched += OnPlatformTouched;
         _lifetime.Elapsed += OnLifetimeElapsed;
